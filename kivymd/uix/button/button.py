@@ -600,23 +600,55 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         if not self.text_color:
             self.text_color = self.theme_cls.text_color
 
-    def update_text_color(
-        self, instance_theme_manager: ThemeManager, theme_style: str
-    ) -> NoReturn:
-        pass
+    # def update_text_color(
+    #     self, instance_theme_manager: ThemeManager, theme_style: str
+    # ) -> NoReturn:
+    #     pass
 
-    def update_disabled_color(
-        self, instance_theme_manager: ThemeManager, theme_style: str
-    ) -> NoReturn:
+    def on_disabled(self, instance, disabled):
+        super().on_disabled(instance, disabled)
+        if disabled is False:
+            self.update_bg_color(instance, self.md_bg_color)
+            return
+        if self.md_bg_color_disabled:
+            self._md_bg_color = self.md_bg_color_disabled
+        else:
+            self._md_bg_color = self.theme_cls.disabled_hint_text_color
+        self._text_color = self._md_bg_color
+
+    def update_text_color(self, instance, value) -> NoReturn:
         if self.disabled:
-            if self.md_bg_color_disabled in [
-                [0.0, 0.0, 0.0, 0.38],
-                [1.0, 1.0, 1.0, 0.5],
-            ]:
-                self.md_bg_color_disabled = (
-                    self.theme_cls.disabled_hint_text_color
-                )
-            self.md_bg_color = self.md_bg_color_disabled
+            self.on_disabled(self, self.disabled)
+        elif self.text_color:
+            self._text_color = self.text_color
+        else:
+            self._text_color = self._get_contrast_color
+
+    # def update_disabled_color(
+    #     self, instance_theme_manager: ThemeManager, theme_style: str
+    # ) -> NoReturn:
+    #     if self.disabled:
+    #         if self.md_bg_color_disabled in [
+    #             [0.0, 0.0, 0.0, 0.38],
+    #             [1.0, 1.0, 1.0, 0.5],
+    #         ]:
+    #             self.md_bg_color_disabled = (
+    #                 self.theme_cls.disabled_hint_text_color
+    #             )
+    #         self.md_bg_color = self.md_bg_color_disabled
+
+    def _get_contrast_color(self, instance, value: list) -> list:
+        """
+        Computes the contrast color, black or white depending on the color provided
+
+        value is a 3+ value list. in format RGB normalizad.
+
+        (values from 0 to 1).
+        """
+        brightness = (0.2126*value[0]) + (0.7152*value[1]) + (0.0722*value[2])
+        if brightness > 0.179:
+            return (1, 1, 1, 1)
+        return (0, 0, 0, 1)
 
     def set_md_bg_color(self, interval: Union[int, float]) -> NoReturn:
         """Checks if a value is set for the `md_bg_color` parameter."""
