@@ -513,6 +513,19 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     and defaults to `'Primary'`.
     """
 
+    _text_color = ColorProperty([0, 0, 0, 0])
+    """
+    Current Text Color in (r, g, b, a) format.
+
+    This value is meant to be used by the button inner methods or states
+    this allows developest to change the text color and turning it back, if
+    a text_color is provided. otherwise, it will be assigned normally by theme
+    or contrast.
+
+    :attr:`text_color` is an :class:`~kivy.properties.ColorProperty`
+    and defaults to `[0, 0, 0, 0]`.
+    """
+
     text_color = ColorProperty(None)
     """
     Button text color in (r, g, b, a) format.
