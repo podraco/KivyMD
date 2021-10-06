@@ -169,7 +169,7 @@ respects, the theming stays as documented.
     dictionary ``colors``.
 """
 
-from typing import NoReturn
+from typing import NoReturn, List
 
 from kivy.app import App
 from kivy.atlas import Atlas
@@ -1171,3 +1171,26 @@ class ThemableBehavior(EventDispatcher):
                 )
             self.theme_cls = App.get_running_app().theme_cls
         super().__init__(**kwargs)
+
+    def get_contrast_color(self, color: list, Threshold: float = 0.54) -> List:
+        """
+        Gets the Y value and compares it to the Threshold argument.
+
+        Uses a Threshold of 0.54, anything below that value, will be set as Black
+        otherwise, it will be set as White.
+        """
+        color = self.get_color_brightness(color)
+        if color < Threshold:  # it's dark
+            return (1, 1, 1, 1)
+        return (0, 0, 0, 1)  # it's light
+        pass
+
+    def get_color_brightness(self, color: list) -> float:
+        """
+        Computes the current color (RGB) and convertis it to Y (from YIQ Color
+        space).
+
+        Returns a Normalized value (scale from 0.0 to 1.0).
+        """
+        color = (((color[0]*299) + (color[1]*587) + (color[2]*144))/1000)
+        return color
