@@ -187,6 +187,7 @@ from kivy.properties import (
     StringProperty,
 )
 from kivy.utils import get_color_from_hex
+from kivy.weakproxy import WeakProxy
 
 from kivymd import images_path
 from kivymd.color_definitions import colors, hue, palette
@@ -1151,9 +1152,9 @@ class ThemableBehavior(EventDispatcher):
     """
 
     def __init__(self, **kwargs):
-        if self.theme_cls is not None:
-            pass
-        else:
+        # if self.theme_cls is not None:
+        #     pass
+        if not self.theme_cls:
             try:
                 if not isinstance(
                     App.get_running_app().property("theme_cls", True),
@@ -1169,7 +1170,7 @@ class ThemableBehavior(EventDispatcher):
                     "root widget. See "
                     "https://github.com/kivymd/KivyMD/wiki/Modules-Material-App#exceptions"
                 )
-            self.theme_cls = App.get_running_app().theme_cls
+            self.theme_cls = WeakProxy(App.get_running_app().theme_cls)
         super().__init__(**kwargs)
 
     def get_contrast_color(self, color: list, Threshold: float = 0.54) -> List:
