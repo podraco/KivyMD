@@ -1,15 +1,15 @@
 <BaseButton>
-    canvas:
-        Clear
-        Color:
-            rgba:
-                self._md_bg_color if not self.disabled else \
-                (root.md_bg_color_disabled if root.md_bg_color_disabled \
-                else root.theme_cls.disabled_hint_text_color)
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: [root._radius, ]
+    # canvas:
+    #     Clear
+    #     Color:
+    #         rgba:
+    #             self._md_bg_color if not self.disabled else \
+    #             (root.md_bg_color_disabled if root.md_bg_color_disabled \
+    #             else root.theme_cls.disabled_hint_text_color)
+    #     RoundedRectangle:
+    #         size: self.size
+    #         pos: self.pos
+    #         radius: [root._radius, ]
 
     lbl_txt: lbl_txt
     size_hint: None, None
@@ -22,18 +22,20 @@
         font_size: root.font_size
         font_style: root.font_style
         adaptive_size: True
-        -text_size: None, None
+        -text_size: (None, None)
         theme_text_color: root.theme_text_color
-        text_color: root.text_color
+        text_color: root._text_color
         markup: True
         disabled: root.disabled
         opposite_colors: root.opposite_colors
         font_name: root.font_name if root.font_name else self.font_name
+        canvas.before:
+            Clear
 
 
 <BaseRoundButton>
-    canvas:
-        Clear
+    canvas.before:
+        # Clear
         Color:
             rgba:
                 (self._md_bg_color if root.icon in md_icons else (0, 0, 0, 0)) \
@@ -54,15 +56,17 @@
         icon: root.icon
         font_size: root.user_font_size if root.user_font_size else self.font_size
         font_name: root.font_name if root.font_name else self.font_name
-        theme_text_color: root.theme_text_color
-        text_color:
-            root.text_color if not root.disabled else \
-            (root.md_bg_color_disabled if root.md_bg_color_disabled \
-            else root.theme_cls.disabled_hint_text_color)
-        disabled: root.disabled
-        valign: "middle"
+        -theme_text_color: root.theme_text_color
+        -text_color: root._text_color
+            # root.text_color if not root.disabled else \
+            # (root.md_bg_color_disabled if root.md_bg_color_disabled \
+            # else root.theme_cls.disabled_hint_text_color)
+        -disabled: root.disabled
         halign: "center"
+        valign: "center"
         opposite_colors: root.opposite_colors
+        canvas.before:
+            Clear
 
 
 <MDRoundFlatButton>
