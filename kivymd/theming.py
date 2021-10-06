@@ -1191,6 +1191,9 @@ class ThemableBehavior(EventDispatcher):
         space).
 
         Returns a Normalized value (scale from 0.0 to 1.0).
+
+        Values calculated from the YIQ color standard
+        See more: https://es.wikipedia.org/wiki/YIQ
         """
         color = (((color[0]*299) + (color[1]*587) + (color[2]*144))/1000)
         return color
