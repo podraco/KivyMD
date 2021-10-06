@@ -1080,6 +1080,46 @@ class ThemeManager(EventDispatcher):
         for style in self.font_styles.keys():
             theme_font_styles.append(style)
 
+    def get_contrast_color(self, color: list, Threshold: float = 0.54) -> List:
+        """
+        Gets the Y value and compares it to the Threshold argument.
+
+        Uses a Threshold of 0.54, anything below that value, will be set as Black
+        otherwise, it will be set as White.
+        """
+        color = self.get_color_brightness(color)  # faster
+        # color = self.get_Luminance(color) # slower, based on luminicense
+        if color < Threshold:  # it's dark
+            return (1, 1, 1, 1)
+        return (0, 0, 0, 1)  # it's light
+        pass
+
+    def get_color_brightness(self, color: list) -> float:
+        """
+        Computes the current color (RGB) and convertis it to Y (from YIQ Color
+        space).
+
+        Returns a Normalized value (scale from 0.0 to 1.0).
+
+        Values calculated from the YIQ color standard
+        See more: https://es.wikipedia.org/wiki/YIQ
+        """
+        color = (((color[0]*299) + (color[1]*587) + (color[2]*144))/1000)
+        return color
+
+    def get_Luminance(self, color: list) -> float:
+        color = color[:3]
+        color = [
+            (
+                (channel/12.92) if (channel <= 0.03928)
+                else (((channel + 0.055) / 1.055) ** 2.4)
+            )
+            for channel in color
+        ]
+        R, G, B = color
+        Luminance = ((0.2126*R) + (0.7152*G) + (0.0722*B))
+        return Luminance
+
 
 class ThemableBehavior(EventDispatcher):
     theme_cls = ObjectProperty()
@@ -1172,43 +1212,3 @@ class ThemableBehavior(EventDispatcher):
                 )
             self.theme_cls = WeakProxy(App.get_running_app().theme_cls)
         super().__init__(**kwargs)
-
-    def get_contrast_color(self, color: list, Threshold: float = 0.54) -> List:
-        """
-        Gets the Y value and compares it to the Threshold argument.
-
-        Uses a Threshold of 0.54, anything below that value, will be set as Black
-        otherwise, it will be set as White.
-        """
-        color = self.get_color_brightness(color)  # faster
-        # color = self.get_Luminance(color) # slower, based on luminicense
-        if color < Threshold:  # it's dark
-            return (1, 1, 1, 1)
-        return (0, 0, 0, 1)  # it's light
-        pass
-
-    def get_color_brightness(self, color: list) -> float:
-        """
-        Computes the current color (RGB) and convertis it to Y (from YIQ Color
-        space).
-
-        Returns a Normalized value (scale from 0.0 to 1.0).
-
-        Values calculated from the YIQ color standard
-        See more: https://es.wikipedia.org/wiki/YIQ
-        """
-        color = (((color[0]*299) + (color[1]*587) + (color[2]*144))/1000)
-        return color
-
-    def get_Luminance(self, color: list) -> float:
-        color = color[:3]
-        color = [
-            (
-                (channel/12.92) if (channel <= 0.03928)
-                else (((channel + 0.055) / 1.055) ** 2.4)
-            )
-            for channel in color
-        ]
-        R, G, B = color
-        Luminance = ((0.2126*R) + (0.7152*G) + (0.0722*B))
-        return Luminance
