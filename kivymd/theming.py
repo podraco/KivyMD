@@ -1180,7 +1180,8 @@ class ThemableBehavior(EventDispatcher):
         Uses a Threshold of 0.54, anything below that value, will be set as Black
         otherwise, it will be set as White.
         """
-        color = self.get_color_brightness(color)
+        color = self.get_color_brightness(color)  # faster
+        # color = self.get_Luminance(color) # slower, based on luminicense
         if color < Threshold:  # it's dark
             return (1, 1, 1, 1)
         return (0, 0, 0, 1)  # it's light
@@ -1198,3 +1199,16 @@ class ThemableBehavior(EventDispatcher):
         """
         color = (((color[0]*299) + (color[1]*587) + (color[2]*144))/1000)
         return color
+
+    def get_Luminance(self, color: list) -> float:
+        color = color[:3]
+        color = [
+            (
+                (channel/12.92) if (channel <= 0.03928)
+                else (((channel + 0.055) / 1.055) ** 2.4)
+            )
+            for channel in color
+        ]
+        R, G, B = color
+        Luminance = ((0.2126*R) + (0.7152*G) + (0.0722*B))
+        return Luminance
