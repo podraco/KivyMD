@@ -495,7 +495,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     """
 
     theme_text_color = OptionProperty(
-        "Primary",
+        "Custom",
         options=[
             "Primary",
             "Secondary",
@@ -591,12 +591,12 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if not self.md_bg_color_disabled:
-            self.md_bg_color_disabled = self.theme_cls.disabled_hint_text_color
-        self.theme_cls.bind(primary_palette=self.update_md_bg_color)
-        self.theme_cls.bind(theme_style=self.update_text_color)
-        self.theme_cls.bind(theme_style=self.update_disabled_color)
-        Clock.schedule_once(self.set_md_bg_color)
+        # if not self.md_bg_color_disabled:
+        #     self.md_bg_color_disabled = self.theme_cls.disabled_hint_text_color
+        self.theme_cls.bind(primary_palette=self.update_bg_color)
+        self.theme_cls.bind(theme_style=self.update_bg_color)
+        # self.theme_cls.bind(theme_style=self.update_disabled_color)
+        # Clock.schedule_once(self.set_md_bg_color)
         if not self.text_color:
             self.text_color = self.theme_cls.text_color
 
@@ -646,46 +646,45 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         (values from 0 to 1).
         """
         brightness = (0.2126*value[0]) + (0.7152*value[1]) + (0.0722*value[2])
-        if brightness > 0.179:
+        if brightness <= 0.179:
             return (1, 1, 1, 1)
         return (0, 0, 0, 1)
 
-    def set_md_bg_color(self, interval: Union[int, float]) -> NoReturn:
-        """Checks if a value is set for the `md_bg_color` parameter."""
+    # def set_md_bg_color(self, interval: Union[int, float]) -> NoReturn:
+    #     """Checks if a value is set for the `md_bg_color` parameter."""
+    #
+    #     if self.md_bg_color == [1.0, 1.0, 1.0, 0]:
+    #         self.md_bg_color = self.theme_cls.primary_color
+    #     if not self.md_bg_color_disabled:
+    #         self.md_bg_color_disabled = self.theme_cls.disabled_hint_text_color
 
-        if self.md_bg_color == [1.0, 1.0, 1.0, 0]:
-            self.md_bg_color = self.theme_cls.primary_color
-        if not self.md_bg_color_disabled:
-            self.md_bg_color_disabled = self.theme_cls.disabled_hint_text_color
-
-    def update_md_bg_color(
-        self, instance_theme_manager: ThemeManager, name_palette: str
-    ) -> NoReturn:
+    def update_bg_color(self, instance, value) -> NoReturn:
         """Called when the application color palette changes."""
+        self.update_text_color(instance, value)
+        super().update_bg_color(instance, value)
+        self._md_bg_color = self.theme_cls._get_primary_color()
+        # self.md_bg_color = self.theme_cls._get_primary_color()
 
-        self.md_bg_color = self.theme_cls._get_primary_color()
-        self.update_text_color(instance_theme_manager, name_palette)
-
-    def on_disabled(self, instance_button, value_disabled: bool) -> NoReturn:
-        """
-        Sets the color of the button at the moment of setting the parameter
-        `disabled`.
-        """
-
-        # Sets button background color (disabled).
-        if value_disabled:
-            if not self.md_bg_color_disabled:
-                self.md_bg_color_disabled = (
-                    self.theme_cls.disabled_hint_text_color
-                )
-            self._md_bg_color = self.md_bg_color_disabled
-        # Sets last current button background color.
-        else:
-            self._md_bg_color = (
-                self.md_bg_color
-                if self.md_bg_color
-                else self.theme_cls.primary_color
-            )
+    # def on_disabled(self, instance_button, value_disabled: bool) -> NoReturn:
+    #     """
+    #     Sets the color of the button at the moment of setting the parameter
+    #     `disabled`.
+    #     """
+    #
+    #     # Sets button background color (disabled).
+    #     if value_disabled:
+    #         if not self.md_bg_color_disabled:
+    #             self.md_bg_color_disabled = (
+    #                 self.theme_cls.disabled_hint_text_color
+    #             )
+    #         self._md_bg_color = self.md_bg_color_disabled
+    #     # Sets last current button background color.
+    #     else:
+    #         self._md_bg_color = (
+    #             self.md_bg_color
+    #             if self.md_bg_color
+    #             else self.theme_cls.primary_color
+    #         )
 
     def on_md_bg_color(self, instance_button, color: list) -> NoReturn:
         """Sets last current button background color."""
@@ -748,12 +747,12 @@ class BaseRectangularButton(
 
 
 class BaseFlatButton(BaseRectangularButton):
-    def update_md_bg_color(
-        self, instance_theme_manager, name_palette: str
-    ) -> NoReturn:
-        """Called when the application color palette changes."""
-
-        self.text_color = self.theme_cls.primary_color
+    # def update_md_bg_color(
+    #     self, instance_theme_manager, name_palette: str
+    # ) -> NoReturn:
+    #     """Called when the application color palette changes."""
+    #
+    #     self.text_color = self.theme_cls.primary_color
 
     def set_text_color(self, interval: Union[int, float]) -> NoReturn:
         """Sets the text color if no custom value is specified."""
@@ -970,11 +969,11 @@ class MDRectangleFlatIconButton(BaseRectangleFlatButton):
         Clock.schedule_once(self.set_icon_color)
         Clock.schedule_once(self._remove_shadow)
 
-    def update_md_bg_color(
-        self, instance_theme_manager, name_palette: str
-    ) -> NoReturn:
-        self.text_color = self.theme_cls.primary_color
-        self.icon_color = self.theme_cls.primary_color
+    # def update_md_bg_color(
+    #     self, instance_theme_manager, name_palette: str
+    # ) -> NoReturn:
+    #     self.text_color = self.theme_cls.primary_color
+    #     self.icon_color = self.theme_cls.primary_color
 
     def set_icon_color(self, interval: Union[int, float]) -> NoReturn:
         """Sets the icon color if no custom value is specified."""
@@ -1077,11 +1076,11 @@ class MDRoundFlatIconButton(MDRoundFlatButton):
         if not self.icon_color:
             self.icon_color = self.theme_cls.primary_color
 
-    def update_md_bg_color(
-        self, instance_theme_manager, name_palette: str
-    ) -> NoReturn:
-        self.text_color = self.theme_cls.primary_color
-        self.icon_color = self.theme_cls.primary_color
+    # def update_md_bg_color(
+    #     self, instance_theme_manager, name_palette: str
+    # ) -> NoReturn:
+    #     self.text_color = self.theme_cls.primary_color
+    #     self.icon_color = self.theme_cls.primary_color
 
     # From Python code.
     def on_icon_color(self, instance_button, color: list) -> NoReturn:
@@ -1114,14 +1113,14 @@ class MDFillRoundFlatButton(MDRoundFlatButton):
                 self.theme_cls.primary_hue
             ]
 
-    def update_md_bg_color(
-        self, instance_theme_manager, name_palette: str
-    ) -> NoReturn:
-        self.md_bg_color = self.theme_cls.primary_color
-        self.set_text_color(0)
-
-    def on_md_bg_color(self, instance_button, color: list) -> NoReturn:
-        self.set_text_color(0)
+    # def update_md_bg_color(
+    #     self, instance_theme_manager, name_palette: str
+    # ) -> NoReturn:
+    #     self.md_bg_color = self.theme_cls.primary_color
+    #     self.set_text_color(0)
+    #
+    # def on_md_bg_color(self, instance_button, color: list) -> NoReturn:
+    #     self.set_text_color(0)
 
 
 class MDFillRoundFlatIconButton(MDRoundFlatIconButton):
@@ -1139,21 +1138,21 @@ class MDFillRoundFlatIconButton(MDRoundFlatIconButton):
         if self.md_bg_color != self.md_bg_color_disabled:
             self._md_bg_color = color
 
-    def update_md_bg_color(
-        self, instance_theme_manager, name_palette: str
-    ) -> NoReturn:
-        """Called when the application color palette changes."""
-
-        self.md_bg_color = self.theme_cls._get_primary_color()
-        self.update_text_color(instance_theme_manager, name_palette)
-        if self.icon_color in (
-            [0.0, 0.0, 0.0, 0.87],
-            [0.0, 0.0, 0.0, 1.0],
-            [1.0, 1.0, 1.0, 1.0],
-        ):
-            self.icon_color = text_colors[self.theme_cls.primary_palette][
-                self.theme_cls.primary_hue
-            ]
+    # def update_md_bg_color(
+    #     self, instance_theme_manager, name_palette: str
+    # ) -> NoReturn:
+    #     """Called when the application color palette changes."""
+    #
+    #     self.md_bg_color = self.theme_cls._get_primary_color()
+    #     self.update_text_color(instance_theme_manager, name_palette)
+    #     if self.icon_color in (
+    #         [0.0, 0.0, 0.0, 0.87],
+    #         [0.0, 0.0, 0.0, 1.0],
+    #         [1.0, 1.0, 1.0, 1.0],
+    #     ):
+    #         self.icon_color = text_colors[self.theme_cls.primary_palette][
+    #             self.theme_cls.primary_hue
+    #         ]
 
     def update_text_color(self, *args) -> NoReturn:
         if self.text_color in (
@@ -1200,7 +1199,7 @@ class MDIconButton(BaseRoundButton, BasePressedButton):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.theme_cls.bind(primary_palette=self.update_md_bg_color)
+        # self.theme_cls.bind(primary_palette=self.update_md_bg_color)
         Clock.schedule_once(self.set_size)
         self.on_md_bg_color(self, [0.0, 0.0, 0.0, 0.0])
 
@@ -1217,11 +1216,11 @@ class MDIconButton(BaseRoundButton, BasePressedButton):
             "48dp" if not self.user_font_size else dp(self.user_font_size + 23)
         )
 
-    def update_md_bg_color(
-        self, instance_theme_manager: ThemeManager, name_palette: str
-    ) -> NoReturn:
-        if self.md_bg_color != [0.0, 0.0, 0.0, 0.0]:
-            self.md_bg_color = self.theme_cls._get_primary_color()
+    # def update_md_bg_color(
+    #     self, instance_theme_manager: ThemeManager, name_palette: str
+    # ) -> NoReturn:
+    #     if self.md_bg_color != [0.0, 0.0, 0.0, 0.0]:
+    #         self.md_bg_color = self.theme_cls._get_primary_color()
 
 
 class MDFloatingActionButton(
@@ -1239,7 +1238,7 @@ class MDFloatingActionButton(
     #  of buttons
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.theme_cls.bind(primary_palette=self.update_md_bg_color)
+        # self.theme_cls.bind(primary_palette=self.update_md_bg_color)
         Clock.schedule_once(self.set_md_bg_color)
         Clock.schedule_once(self.set_size)
         Clock.schedule_once(self.update_text_color)
