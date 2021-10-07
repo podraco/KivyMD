@@ -621,80 +621,30 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         self._text_color = self._md_bg_color
 
     def update_text_color(self, instance, value) -> NoReturn:
+        if self.theme_text_color != "Custom":
+            # We return here because we don't have anything to check nor update
+            # as the value is already computed by the MDLabel logic.
+            return
+
         if self.disabled:
             self.on_disabled(self, self.disabled)
         elif self.text_color:
             self._text_color = self.text_color
         else:
-            self._text_color = self._get_contrast_color
-
-    # def update_disabled_color(
-    #     self, instance_theme_manager: ThemeManager, theme_style: str
-    # ) -> NoReturn:
-    #     if self.disabled:
-    #         if self.md_bg_color_disabled in [
-    #             [0.0, 0.0, 0.0, 0.38],
-    #             [1.0, 1.0, 1.0, 0.5],
-    #         ]:
-    #             self.md_bg_color_disabled = (
-    #                 self.theme_cls.disabled_hint_text_color
-    #             )
-    #         self.md_bg_color = self.md_bg_color_disabled
-
-    def _get_contrast_color(self, instance, value: list) -> list:
-        """
-        Computes the contrast color, black or white depending on the color provided
-
-        value is a 3+ value list. in format RGB normalizad.
-
-        (values from 0 to 1).
-        """
-        brightness = (0.2126*value[0]) + (0.7152*value[1]) + (0.0722*value[2])
-        if brightness <= 0.179:
-            return (1, 1, 1, 1)
-        return (0, 0, 0, 1)
-
-    # def set_md_bg_color(self, interval: Union[int, float]) -> NoReturn:
-    #     """Checks if a value is set for the `md_bg_color` parameter."""
-    #
-    #     if self.md_bg_color == [1.0, 1.0, 1.0, 0]:
-    #         self.md_bg_color = self.theme_cls.primary_color
-    #     if not self.md_bg_color_disabled:
-    #         self.md_bg_color_disabled = self.theme_cls.disabled_hint_text_color
+            self._text_color = self.theme_cls.get_contrast_color(self._md_bg_color)
 
     def update_bg_color(self, instance, value) -> NoReturn:
         """Called when the application color palette changes."""
-        self.update_text_color(instance, value)
+        # The super call acts as follows:
+        #   calls the disabled method and only applies a color if md_bg_color is
+        #   set, otherwise doesn't changes the _md_bg_color, returns None.
         super().update_bg_color(instance, value)
-        self._md_bg_color = self.theme_cls._get_primary_color()
-        # self.md_bg_color = self.theme_cls._get_primary_color()
-
-    # def on_disabled(self, instance_button, value_disabled: bool) -> NoReturn:
-    #     """
-    #     Sets the color of the button at the moment of setting the parameter
-    #     `disabled`.
-    #     """
-    #
-    #     # Sets button background color (disabled).
-    #     if value_disabled:
-    #         if not self.md_bg_color_disabled:
-    #             self.md_bg_color_disabled = (
-    #                 self.theme_cls.disabled_hint_text_color
-    #             )
-    #         self._md_bg_color = self.md_bg_color_disabled
-    #     # Sets last current button background color.
-    #     else:
-    #         self._md_bg_color = (
-    #             self.md_bg_color
-    #             if self.md_bg_color
-    #             else self.theme_cls.primary_color
-    #         )
-
-    def on_md_bg_color(self, instance_button, color: list) -> NoReturn:
-        """Sets last current button background color."""
-
-        if self.md_bg_color != self.md_bg_color_disabled:
-            self._md_bg_color = color
+        # Now we tell the object to set the button to use the theme color if
+        # the md_bg_color property is set to None
+        if not self.md_bg_color:
+            self._md_bg_color = self.theme_cls._get_primary_color()
+        # then, we set the text color.
+        self.update_text_color(instance, value)
 
     def _remove_shadow(self, interval: Union[int, float]) -> NoReturn:
         self.canvas.before.remove_group("soft_shadow")
@@ -705,33 +655,39 @@ class BasePressedButton(BaseButton):
     Base class for those button which fade to a background color on press.
     """
 
-    animation_fade_bg = None
-    current_md_bg_color = ColorProperty(None)
+    def __init__(self, *dt, **kwargs):
+        super().__init__(**kwargs)
+        self._pressed_fade_animation = None
+        self.alpha_original = None
 
     def on_touch_down(self, touch):
-        if touch.is_mouse_scrolling:
-            return False
-        elif not self.collide_point(touch.x, touch.y):
-            return False
-        elif self in touch.ud:
-            return False
-        elif self.disabled:
+        if any((
+            touch.is_mouse_scrolling,
+            not self.collide_point(touch.x, touch.y),
+            self in touch.ud,
+            self.disabled,
+        )):
             return False
         else:
-            if self.md_bg_color == [0.0, 0.0, 0.0, 0.0]:
-                self.current_md_bg_color = self.md_bg_color
-                self.animation_fade_bg = Animation(
-                    duration=0.5, md_bg_color=[0.0, 0.0, 0.0, 0.1]
+            # if the button is transparent:
+            if self._md_bg_color[-1] < 1:
+                self.alpha_original = self._md_bg_color[-1]
+                val = self._md_bg_color[-1] + 0.1
+                val = val if (val <= 1) else 1
+                # self.md_bg_color = self.md_bg_color
+                self._pressed_fade_animation = Animation(
+                    duration=0.5,
+                    md_bg_color=(self._md_bg_color[:3]+[0.1]),
                 )
-                self.animation_fade_bg.start(self)
+                self._pressed_fade_animation.start(self)
             return super().on_touch_down(touch)
 
     def on_touch_up(self, touch):
-        if not self.disabled and self.animation_fade_bg:
-            self.animation_fade_bg.stop_property(self, "md_bg_color")
-            self.animation_fade_bg = None
+        if not self.disabled and self._pressed_fade_animation:
+            self._pressed_fade_animation.stop_property(self, "md_bg_color")
+            self._pressed_fade_animation = None
             Animation(
-                duration=0.05, md_bg_color=self.current_md_bg_color
+                duration=0.05, _md_bg_color=self._md_bg_color[3]+[self.alpha_original]
             ).start(self)
         return super().on_touch_up(touch)
 
@@ -799,7 +755,6 @@ class BaseFlatButton(BaseRectangularButton):
         self.elevation = 0
         self._elevation = 0
         super().on_elevation(instance_button, elevation_value)
-
 
 class BaseElevationButton(BaseButton, CommonElevationBehavior):
     """
@@ -1205,7 +1160,7 @@ class MDIconButton(BaseRoundButton, BasePressedButton):
         super().__init__(**kwargs)
         # self.theme_cls.bind(primary_palette=self.update_md_bg_color)
         Clock.schedule_once(self.set_size)
-        self.on_md_bg_color(self, [0.0, 0.0, 0.0, 0.0])
+        # self.on_md_bg_color(self, [0.0, 0.0, 0.0, 0.0])
 
     def set_size(self, interval: Union[int, float]) -> NoReturn:
         """
