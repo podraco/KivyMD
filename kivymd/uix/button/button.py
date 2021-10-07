@@ -618,7 +618,10 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         if self.md_bg_color_disabled:
             self._md_bg_color = self.md_bg_color_disabled
         else:
-            self._md_bg_color = self.theme_cls.disabled_hint_text_color
+            self._md_bg_color = {
+                "Light": (0, 0, 0, 0.2),
+                "Dark": (1, 1, 1, 0.16),
+            }[self.theme_cls.theme_style]
         self._text_color = self._md_bg_color
 
     def update_text_color(self, instance, value) -> NoReturn:
