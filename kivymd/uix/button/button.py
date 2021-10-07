@@ -597,8 +597,9 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     _radius = NumericProperty(0)
     # _md_bg_color = ColorProperty(None)  # last current button color
 
+    use_theme_color = BooleanProperty(True)
+
     def __init__(self, **kwargs):
-        self.use_theme_color = True
         super().__init__(**kwargs)
         # self.theme_cls.bind(primary_palette=self.update_bg_color)
         self.theme_cls.bind(primary_color=self.update_bg_color)
@@ -641,7 +642,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         super().update_bg_color(instance, value)
         # Now we tell the object to set the button to use the theme color if
         # the md_bg_color property is set to None
-        if not self.md_bg_color:
+        if not self.md_bg_color and self.use_theme_color:
             self._md_bg_color = self.theme_cls._get_primary_color()
         # then, we set the text color.
         self.update_text_color(instance, value)
