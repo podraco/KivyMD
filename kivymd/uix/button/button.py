@@ -872,7 +872,7 @@ class MDRaisedButton(BaseRectangularButton, BaseElevationButton):
 
 
 class MDFlatButton(BaseFlatButton):
-    md_bg_color = ColorProperty([0.0, 0.0, 0.0, 0.0])
+    pass
 
 
 class MDRectangleFlatButton(BaseRectangleFlatButton):
