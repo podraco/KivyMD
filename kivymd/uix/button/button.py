@@ -484,7 +484,12 @@ with open(
 
 
 class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, AnchorLayout):
-    """Base class for all buttons."""
+    """
+    Base class for all buttons.
+
+    Here we define the abstract methods and behaviors we expect that every MD
+    button shares.
+    """
 
     text = StringProperty(" ")
     """
@@ -570,12 +575,15 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     and defaults to `'Body1'`.
     """
 
-    md_bg_color = ColorProperty([1.0, 1.0, 1.0, 0])
+    md_bg_color = ColorProperty(None)
     """
-    Button background color.
+    Button's background color.
+
+    Set this value to change the button color, otherwise, the button will use
+    the theme color by default.
 
     :attr:`md_bg_color` is an :class:`~kivy.properties.ColorProperty`
-    and defaults to `[1.0, 1.0, 1.0, 0]`.
+    and defaults to `None`.
     """
 
     md_bg_color_disabled = ColorProperty(None)
@@ -590,15 +598,11 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     # _md_bg_color = ColorProperty(None)  # last current button color
 
     def __init__(self, **kwargs):
+        self.use_theme_color = True
         super().__init__(**kwargs)
-        # if not self.md_bg_color_disabled:
-        #     self.md_bg_color_disabled = self.theme_cls.disabled_hint_text_color
-        self.theme_cls.bind(primary_palette=self.update_bg_color)
+        # self.theme_cls.bind(primary_palette=self.update_bg_color)
+        self.theme_cls.bind(primary_color=self.update_bg_color)
         self.theme_cls.bind(theme_style=self.update_bg_color)
-        # self.theme_cls.bind(theme_style=self.update_disabled_color)
-        # Clock.schedule_once(self.set_md_bg_color)
-        if not self.text_color:
-            self.text_color = self.theme_cls.text_color
 
     # def update_text_color(
     #     self, instance_theme_manager: ThemeManager, theme_style: str
@@ -608,7 +612,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     def on_disabled(self, instance, disabled):
         super().on_disabled(instance, disabled)
         if disabled is False:
-            self.update_bg_color(instance, self.md_bg_color)
+            self.update_bg_color(instance, self._md_bg_color)
             return
         if self.md_bg_color_disabled:
             self._md_bg_color = self.md_bg_color_disabled
