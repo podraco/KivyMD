@@ -415,21 +415,24 @@ You can set your color values ​​for background, text of buttons etc:
     `See full example <https://github.com/kivymd/KivyMD/wiki/Components-Button>`_
 """
 
-__all__ = (
-    "MDIconButton",
-    "MDFloatingActionButton",
-    "MDFlatButton",
-    "MDRaisedButton",
-    "MDRectangleFlatButton",
-    "MDRectangleFlatIconButton",
-    "MDRoundFlatButton",
-    "MDRoundFlatIconButton",
-    "MDFillRoundFlatButton",
-    "MDFillRoundFlatIconButton",
-    "MDTextButton",
-    "MDFloatingActionButtonSpeedDial",
-)
-
+# __all__ = (
+#     "MDIconButton",
+#     "MDFloatingActionButton",
+#     "MDFlatButton",
+#     "MDRaisedButton",
+#     "MDRectangleFlatButton",
+#     "MDRectangleFlatIconButton",
+#     "MDRoundFlatButton",
+#     "MDRoundFlatIconButton",
+#     "MDFillRoundFlatButton",
+#     "MDFillRoundFlatIconButton",
+#     "MDTextButton",
+#     "MDFloatingActionButtonSpeedDial",
+#     "BaseButton",
+#     "BasePressedButton",
+#     "BaseRectangularButton",
+#     "BaseFlatButton",
+# )
 import os
 from typing import NoReturn, Union
 
@@ -724,6 +727,9 @@ class BaseRectangularButton(
 
 
 class BaseFlatButton(BaseRectangularButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.draw_shadow = self.__draw_shadow__
 
     def update_bg_color(self, instance, value):
         if self.disabled:
@@ -750,6 +756,10 @@ class BaseFlatButton(BaseRectangularButton):
         self.elevation = 0
         self._elevation = 0
         super().on_elevation(instance_button, elevation_value)
+
+    def __draw_shadow__(self, *dt,**kwargs):
+        pass
+
 
 class BaseElevationButton(BaseButton, CommonElevationBehavior):
     """
