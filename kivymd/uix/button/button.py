@@ -710,44 +710,22 @@ class BaseRectangularButton(
 
 
 class BaseFlatButton(BaseRectangularButton):
-    # def update_md_bg_color(
-    #     self, instance_theme_manager, name_palette: str
-    # ) -> NoReturn:
-    #     """Called when the application color palette changes."""
-    #
-    #     self.text_color = self.theme_cls.primary_color
 
-    def set_text_color(self, interval: Union[int, float]) -> NoReturn:
-        """Sets the text color if no custom value is specified."""
-
-        if self.text_color in ([0.0, 0.0, 0.0, 0.87], [1, 1, 1, 1]):
-            self.theme_text_color = "Custom"
-            self.text_color = self.theme_cls.primary_color
-
-    def on_md_bg_color(self, instance_button, color: list) -> NoReturn:
-        """
-        We override this method, thus prohibiting setting the background color
-        for the button.
-
-        Allows to set the background color only in the rangefrom
-        [0.0, 0.0, 0.0, 0.0] to [0.0, 0.0, 0.0, 0.1]. This color is set in
-        the :class:`BasePressedButton` class when the button is pressed and
-        Ignore other custom colors.
-        """
-
-        if color[:-1] != [0.0, 0.0, 0.0]:
-            self.md_bg_color = [0.0, 0.0, 0.0, 0.0]
-
-    def on_disabled(self, instance_button, value_disabled: bool) -> NoReturn:
-        if value_disabled and not self.disabled:
-            self.md_bg_color = (
-                self.md_bg_color_disabled
-                if self.md_bg_color_disabled
-                else self.theme_cls.disabled_hint_text_color
-            )
+    def update_bg_color(self, instance, value):
+        if self.disabled:
+            self.on_disabled(self, self.disabled)
+            return
         else:
-            if self.md_bg_color:
-                self._md_bg_color = self.md_bg_color
+            self._md_bg_color = (0, 0, 0, 0)
+        self.update_text_color(self, self.text_color)
+
+    def update_text_color(self, instance, value):
+        if self.theme_text_color != "Custom":
+            pass
+        elif self.text_color:
+            self._text_color = self.text_color
+        else:
+            self._text_color = self.theme_cls._get_text_color()
 
     def on_elevation(self, instance_button, elevation_value: int) -> NoReturn:
         """
