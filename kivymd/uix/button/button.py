@@ -657,8 +657,8 @@ class BasePressedButton(BaseButton):
 
     def __init__(self, *dt, **kwargs):
         super().__init__(**kwargs)
+        # self.use_theme_color = False
         self._pressed_fade_animation = None
-        self.alpha_original = None
 
     def on_touch_down(self, touch):
         if any((
@@ -670,24 +670,27 @@ class BasePressedButton(BaseButton):
             return False
         else:
             # if the button is transparent:
-            if self._md_bg_color[-1] < 1:
-                self.alpha_original = self._md_bg_color[-1]
-                val = self._md_bg_color[-1] + 0.1
-                val = val if (val <= 1) else 1
-                # self.md_bg_color = self.md_bg_color
+            if self._md_bg_color[-1] == 0 :
+                if self._pressed_fade_animation:
+                    self._pressed_fade_animation.stop_property(self, "_md_bg_color")
                 self._pressed_fade_animation = Animation(
                     duration=0.5,
-                    md_bg_color=(self._md_bg_color[:3]+[0.1]),
+                    _md_bg_color=((0, 0, 0, 0.16)),
                 )
                 self._pressed_fade_animation.start(self)
             return super().on_touch_down(touch)
 
     def on_touch_up(self, touch):
         if not self.disabled and self._pressed_fade_animation:
-            self._pressed_fade_animation.stop_property(self, "md_bg_color")
+            self._pressed_fade_animation.stop_property(self, "_md_bg_color")
             self._pressed_fade_animation = None
-            Animation(
-                duration=0.05, _md_bg_color=self._md_bg_color[3]+[self.alpha_original]
+            if self.md_bg_color:
+                color = self.md_bg_color
+            else:
+                color = [0]*4
+            self._pressed_fade_animation = Animation(
+                duration=0.05,
+                _md_bg_color=color,
             ).start(self)
         return super().on_touch_up(touch)
 
@@ -695,7 +698,6 @@ class BasePressedButton(BaseButton):
 class BaseRectangularButton(
     RectangularRippleBehavior,
     FakeRectangularElevationBehavior,
-    # RectangularColorBehavior,
     BasePressedButton,
     BaseButton,
 ):
