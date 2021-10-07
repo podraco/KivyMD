@@ -659,6 +659,11 @@ class BasePressedButton(BaseButton):
     Base class for those button which fade to a background color on press.
     """
 
+    do_press_animation = BooleanProperty(True)
+    """
+    Controls wether or not execute the press animation.
+    """
+
     def __init__(self, *dt, **kwargs):
         super().__init__(**kwargs)
         # self.use_theme_color = False
@@ -674,7 +679,7 @@ class BasePressedButton(BaseButton):
             return False
         else:
             # if the button is transparent:
-            if self._md_bg_color[-1] == 0 :
+            if self._md_bg_color[-1] == 0 and self.do_press_animation:
                 if self._pressed_fade_animation:
                     self._pressed_fade_animation.stop_property(self, "_md_bg_color")
                 self._pressed_fade_animation = Animation(
@@ -695,7 +700,13 @@ class BasePressedButton(BaseButton):
             self._pressed_fade_animation = Animation(
                 duration=0.05,
                 _md_bg_color=color,
-            ).start(self)
+            )
+            self._pressed_fade_animation.bind(
+                on_complete=lambda *x: setattr(
+                    self,"_pressed_fade_animation", None
+                )
+            )
+            self._pressed_fade_animation.start(self)
         return super().on_touch_up(touch)
 
 
