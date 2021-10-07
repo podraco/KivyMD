@@ -514,9 +514,9 @@ class ThemeManager(EventDispatcher):
     def _get_bg_darkest(self, opposite: bool = False) -> list:
         theme_style = self._get_theme_style(opposite)
         if theme_style == "Light":
-            return get_color_from_hex(self.colors["Light"]["StatusBar"])
+            return get_color_from_hex(self.colors["Background_Light"]["A700"])
         elif theme_style == "Dark":
-            return get_color_from_hex(self.colors["Dark"]["StatusBar"])
+            return get_color_from_hex(self.colors["Background_Dark"]["A700"])
 
     bg_darkest = AliasProperty(_get_bg_darkest, bind=["theme_style"])
     """
@@ -578,9 +578,9 @@ class ThemeManager(EventDispatcher):
     def _get_bg_dark(self, opposite: bool = False) -> list:
         theme_style = self._get_theme_style(opposite)
         if theme_style == "Light":
-            return get_color_from_hex(self.colors["Light"]["AppBar"])
+            return get_color_from_hex(self.colors["Background_Light"]["A400"])
         elif theme_style == "Dark":
-            return get_color_from_hex(self.colors["Dark"]["AppBar"])
+            return get_color_from_hex(self.colors["Background_Dark"]["A400"])
 
     bg_dark = AliasProperty(_get_bg_dark, bind=["theme_style"])
     """
@@ -607,9 +607,9 @@ class ThemeManager(EventDispatcher):
     def _get_bg_normal(self, opposite: bool = False) -> list:
         theme_style = self._get_theme_style(opposite)
         if theme_style == "Light":
-            return get_color_from_hex(self.colors["Light"]["Background"])
+            return get_color_from_hex(self.colors["Background_Light"]["A200"])
         elif theme_style == "Dark":
-            return get_color_from_hex(self.colors["Dark"]["Background"])
+            return get_color_from_hex(self.colors["Background_Dark"]["A200"])
 
     bg_normal = AliasProperty(_get_bg_normal, bind=["theme_style"])
     """
@@ -636,9 +636,9 @@ class ThemeManager(EventDispatcher):
     def _get_bg_light(self, opposite: bool = False) -> list:
         theme_style = self._get_theme_style(opposite)
         if theme_style == "Light":
-            return get_color_from_hex(self.colors["Light"]["CardsDialogs"])
+            return get_color_from_hex(self.colors["Background_Light"]["A100"])
         elif theme_style == "Dark":
-            return get_color_from_hex(self.colors["Dark"]["CardsDialogs"])
+            return get_color_from_hex(self.colors["Background_Dark"]["A100"])
 
     bg_light = AliasProperty(_get_bg_light, bind=["theme_style"])
     """"
