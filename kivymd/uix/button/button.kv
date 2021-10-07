@@ -32,6 +32,7 @@
         canvas.before:
             Clear
 
+
 <BaseFlatButton>:
     -elevation: 0
     -use_theme_color: False
@@ -71,6 +72,16 @@
         opposite_colors: root.opposite_colors
         canvas.before:
             Clear
+
+
+<MDFlatButton>:
+    canvas.before:
+        Clear
+        Color:
+            rgba: self._md_bg_color
+        Rectangle:
+            pos:self.pos
+            size: self.size
 
 
 <MDRoundFlatButton>
