@@ -1030,57 +1030,33 @@ class MDFlatButton(BaseFlatButton):
     pass
 
 
-class MDRectangleFlatButton(BaseRectangleFlatButton):
+class MDRectangleFlatButton(BaseLineButton, MDFlatButton):
+    pass
     # TODO: If the user has set a custom text color, then when the application
     #  color palette changes, the text color will also change to the current
     #  color of the color scheme. Do need to preserve custom text colors when
     #  changing the application palette?
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        Clock.schedule_once(self._remove_shadow)
+    # def __init__(self, **kwargs):
+    #     super().__init__(**kwargs)
+    #     Clock.schedule_once(self._remove_shadow)
 
 
-class MDRectangleFlatIconButton(BaseRectangleFlatButton):
-    icon = StringProperty("android")
-    """
-    Button icon.
-
-    :attr:`icon` is an :class:`~kivy.properties.StringProperty`
-    and defaults to `'android'`.
-    """
-
-    icon_color = ColorProperty(None)
-    """
-    Button icon color.
-
-    :attr:`icon_color` is an :class:`~kivy.properties.ColorProperty`
-    and defaults to `None`.
-    """
+class MDRectangleFlatIconButton(BaseIconButton, MDRectangleFlatButton):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Clock.schedule_once(self.remove_label)
-        Clock.schedule_once(self.set_icon_color)
         Clock.schedule_once(self._remove_shadow)
+        # Clock.schedule_once(self.set_icon_color)
 
-    # def update_md_bg_color(
-    #     self, instance_theme_manager, name_palette: str
-    # ) -> NoReturn:
-    #     self.text_color = self.theme_cls.primary_color
-    #     self.icon_color = self.theme_cls.primary_color
-
-    def set_icon_color(self, interval: Union[int, float]) -> NoReturn:
-        """Sets the icon color if no custom value is specified."""
-
-        if not self.icon_color:
-            self.icon_color = self.theme_cls.primary_color
-
-    def remove_label(self, interval: Union[int, float]) -> NoReturn:
-        self.remove_widget(self.ids.lbl_txt)
+    # def set_icon_color(self, interval: Union[int, float]) -> NoReturn:
+    #     """Sets the icon color if no custom value is specified."""
+    #     if self.icon_color:
+    #         self.icon_color = self.theme_cls.primary_color
 
 
-class MDRoundFlatButton(MDFlatButton):
+class MDRoundFlatButton(BaseLineButton, MDFlatButton):
     line_width = NumericProperty(1)
     """
     Line width for button border.
@@ -1097,11 +1073,11 @@ class MDRoundFlatButton(MDFlatButton):
     and defaults to `None`.
     """
 
-    _radius = NumericProperty("18dp")
+    # radius = NumericProperty("18dp")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Clock.schedule_once(self.set_text_color)
+        # Clock.schedule_once(self.set_text_color)
         Clock.schedule_once(self._remove_shadow)
 
     def anim_complete(self, *args):
@@ -1117,7 +1093,7 @@ class MDRoundFlatButton(MDFlatButton):
             RoundedRectangle(
                 size=self.size,
                 pos=self.pos,
-                radius=[self._radius],
+                radius=[*self.radius],
                 group="round_ripple_behavior",
             )
             StencilUse()
@@ -1136,7 +1112,7 @@ class MDRoundFlatButton(MDFlatButton):
             RoundedRectangle(
                 size=self.size,
                 pos=self.pos,
-                radius=[self._radius],
+                radius=[*self.radius],
                 group="round_ripple_behavior",
             )
             StencilPop(group="round_ripple_behavior")
