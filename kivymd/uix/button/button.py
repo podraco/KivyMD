@@ -766,6 +766,25 @@ class BaseRectangularButton(
 
 
 class BaseFlatButton(BaseRectangularButton):
+    use_primary_as_text = BooleanProperty(False)
+    """
+    Controller Value.
+
+    Determines wether we use or not the primary color as text color,
+    rather than using the `ThemeManager.text_color`
+
+    Values:
+    * True: will use the ThemeManager,primary_color as text color.
+    * False: will use the ThemeManager.text_color instead.
+
+    This property can be set on KV. doing so, remember to set the
+    dash prior to the property to avoid multiple redefinitions.
+    example:
+    ```
+        widget:
+            -use_primary_as_text: True
+    ```
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.draw_shadow = self.__draw_shadow__
@@ -778,11 +797,13 @@ class BaseFlatButton(BaseRectangularButton):
             self._md_bg_color = (0, 0, 0, 0)
         self.update_text_color(self, self.text_color)
 
-    def update_text_color(self, instance, value):
+    def update_text_color(self, *dt):
         if self.theme_text_color != "Custom":
             pass
         elif self.text_color:
             self._text_color = self.text_color
+        elif self.use_primary_as_text:
+            self._text_color = self.theme_cls._get_primary_color()
         else:
             self._text_color = self.theme_cls._get_text_color()
 
@@ -798,6 +819,9 @@ class BaseFlatButton(BaseRectangularButton):
 
     def __draw_shadow__(self, *dt,**kwargs):
         pass
+
+    def on_md_bg_color(self, instance, value):
+        self.md_bg_color = None
 
 
 class BaseElevationButton(BaseButton, CommonElevationBehavior):
@@ -877,12 +901,12 @@ class BaseRoundButton(CircularRippleBehavior, BaseButton):
     on-touch behavior
     """
 
-    md_bg_color = ColorProperty([0.0, 0.0, 0.0, 0.0])
+    # md_bg_color = ColorProperty([0.0, 0.0, 0.0, 0.0])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Clock.schedule_once(self.set_text)
-        Clock.schedule_once(self.set_text_color)
+        # Clock.schedule_once(self.set_text)
+        # Clock.schedule_once(self.set_text_color)
 
     def set_text_color(self, interval: Union[int, float]) -> NoReturn:
         if not self.text_color:
@@ -892,24 +916,53 @@ class BaseRoundButton(CircularRippleBehavior, BaseButton):
         self.text = ""
 
 
-class BaseRectangleFlatButton(BaseFlatButton, BaseElevationButton):
-    line_width = NumericProperty(1)
+class BaseIconButton(BaseButton):
+    _icon_color = ColorProperty([0, 0, 0, 1])
     """
-    Line width for button border.
-
-    :attr:`line_width` is an :class:`~kivy.properties.NumericProperty`
-    and defaults to `1`.
+    Current Butto's color.
     """
 
-    line_color = ColorProperty(None)
+    icon_color = ColorProperty(None)
     """
-    Line color for button border.
+    Button icon color.
 
-    :attr:`line_color` is an :class:`~kivy.properties.ColorProperty`
+    :attr:`icon_color` is an :class:`~kivy.properties.ColorProperty`
     and defaults to `None`.
     """
 
-    md_bg_color = ColorProperty([0.0, 0.0, 0.0, 0.0])
+    icon = StringProperty("android")
+    """
+    Button icon.
+
+    :attr:`icon` is an :class:`~kivy.properties.StringProperty`
+    and defaults to `'android'`.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(icon_color=self.update_icon_color)
+        Clock.schedule_once(self.update_icon_color)
+
+    def update_icon_color(self, *dt):
+        if self.disabled:
+            self.on_disabled(self, self.disabled)
+            return
+        elif self.icon_color:
+            self._icon_color = self.icon_color
+        elif self.text_color:
+            self._icon_color = self.text_color
+        if self.use_theme_color:
+            self._icon_color = self.theme_cls._get_primary_color()
+
+    def on_disabled(self, instance, disabled):
+        super().on_disabled(instance, disabled)
+        if not self.disabled:
+            self.update_icon_color(self, self.icon_color)
+            return
+        elif self.md_bg_color_disabled:
+            self._icon_color = self.md_bg_color_disabled
+            return
+        self._icon_color = self._md_bg_color
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
