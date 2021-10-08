@@ -457,6 +457,7 @@ from kivy.properties import (
     ObjectProperty,
     OptionProperty,
     StringProperty,
+    VariableListProperty,
 )
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.behaviors import ButtonBehavior
@@ -492,6 +493,18 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
 
     Here we define the abstract methods and behaviors we expect that every MD
     button shares.
+
+    See more:
+    * :class:`~kivymd.uix.behavrios.BackgroundColorBehavior`: Provides the background
+    behavior and basic color management.
+
+    * :class:`~kivymd.theming.ThemableBehavior`: Provided the API of the kivyMD
+    theming System. as well makes it easier to bind events to it.
+
+    * :class:`~kivy.uix.behaviors.ButtonBehavior`: Provides user Input maangement
+
+    * :class:`~kivy.uix.anchorlayout.AnchorLayout`: Provides widget position/children
+    managment
     """
 
     text = StringProperty(" ")
@@ -578,7 +591,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     and defaults to `'Body1'`.
     """
 
-    md_bg_color = ColorProperty(None)
+    md_bg_color = ColorProperty(None, allownone=True)
     """
     Button's background color.
 
@@ -597,21 +610,44 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     and defaults to `None`.
     """
 
-    _radius = NumericProperty(0)
-    # _md_bg_color = ColorProperty(None)  # last current button color
-
     use_theme_color = BooleanProperty(True)
+    """
+    Controller Value.
+
+    Determines wether we use or not the primary color as background color.
+    this will only affect trasnparen buttons, since the `obj._md_bg_color`
+    is set to `[0,0,0,0]` by default.
+
+    This value affect the behavior of `object.update_bg_color` mehtod.
+
+    Values:
+    * True: Will update the _md_bg_color to the ThemeManager.primary_color
+    * False: won't change the color.
+
+    read the update_bg_color logic for more information.
+
+    Since this name is ambiguous, it can be used by other methods.
+    """
+
+    segments: int = NumericProperty(100)
+    """
+    Number of segments used by the canvas instruction.
+
+    The higher the number the better quallity, but keep in mind that it will
+    take longer to process.
+
+    This only affects Rounded elements as:
+    * RoundedRectangles.
+    * Ellipses.
+    * Circles.
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.theme_cls.bind(primary_palette=self.update_bg_color)
         self.theme_cls.bind(primary_color=self.update_bg_color)
         self.theme_cls.bind(theme_style=self.update_bg_color)
-
-    # def update_text_color(
-    #     self, instance_theme_manager: ThemeManager, theme_style: str
-    # ) -> NoReturn:
-    #     pass
+        Clock.schedule_once(self.update_text_color)
 
     def on_disabled(self, instance, disabled):
         super().on_disabled(instance, disabled)
@@ -627,7 +663,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
             }[self.theme_cls.theme_style]
         self._text_color = self._md_bg_color
 
-    def update_text_color(self, instance, value) -> NoReturn:
+    def update_text_color(self, *dt) -> NoReturn:
         if self.theme_text_color != "Custom":
             # We return here because we don't have anything to check nor update
             # as the value is already computed by the MDLabel logic.
@@ -651,10 +687,13 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         if not self.md_bg_color and self.use_theme_color:
             self._md_bg_color = self.theme_cls._get_primary_color()
         # then, we set the text color.
-        self.update_text_color(instance, value)
+        self.update_text_color()
 
     def _remove_shadow(self, interval: Union[int, float]) -> NoReturn:
         self.canvas.before.remove_group("soft_shadow")
+
+    def remove_label(self, interval: Union[int, float]) -> NoReturn:
+        self.remove_widget(self.ids.lbl_txt)
 
 
 class BasePressedButton(BaseButton):
