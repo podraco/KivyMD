@@ -964,9 +964,48 @@ class BaseIconButton(BaseButton):
             return
         self._icon_color = self._md_bg_color
 
+
+class BaseLineButton(BaseButton):
+    line_width = NumericProperty(1)
+    """
+    Line width for button border.
+
+    :attr:`line_width` is an :class:`~kivy.properties.NumericProperty`
+    and defaults to `1`.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Clock.schedule_once(self.set_text_color)
+        # self.use_theme_color = True
+        self.theme_cls.bind(primary_color=self.update_line_color)
+        self.theme_cls.bind(theme_style=self.update_line_color)
+        Clock.schedule_once(self.update_line_color)
+
+    def update_line_color(self, *dt):
+        if self.disabled:
+            self.on_disabled(self, self.disabled)
+            return
+        elif self.line_color:
+            self._line_color = self.line_color
+            return
+        elif self.use_theme_color:
+            self._line_color = self.theme_cls._get_primary_color()
+            return
+
+    def on_disabled(self, instance, disabled):
+        super().on_disabled(instance, disabled)
+        if not self.md_bg_color_disabled:
+            self._line_color = self.theme_cls.disabled_hint_text_color
+
+
+# class BaseRectangleFlatButton(BaseFlatButton, BaseElevationButton):
+#
+#
+#     md_bg_color = ColorProperty([0.0, 0.0, 0.0, 0.0])
+#
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#         # Clock.schedule_once(self.set_text_color)
 
 
 class MDRaisedButton(BaseRectangularButton, BaseElevationButton):
