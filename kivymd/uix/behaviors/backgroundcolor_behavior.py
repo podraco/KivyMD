@@ -193,7 +193,7 @@ class BackgroundColorBehavior(CommonElevationBehavior):
     and defaults to `0.0`.
     """
 
-    radius = VariableListProperty([0], length=4)
+    radius = VariableListProperty([1], length=4)
     """
     Canvas radius.
 
@@ -255,8 +255,12 @@ class BackgroundColorBehavior(CommonElevationBehavior):
 
     md_bg_color_disabled = ColorProperty(None)
 
+    _line_color = ColorProperty([0, 0, 0, 1])
+    """
+    current line color.
+    """
 
-    line_color = ColorProperty([0, 0, 0, 0])
+    line_color = ColorProperty(None)
     """
     If a custom value is specified for the `line_color parameter`, the border
     of the specified color will be used to border the widget:
@@ -289,6 +293,7 @@ class BackgroundColorBehavior(CommonElevationBehavior):
         super().__init__(**kwarg)
         self.bind(pos=self.update_background_origin)
         self.bind(md_bg_color=self.update_bg_color)
+        self.bind(line_color=self.update_line_color)
         Clock.schedule_once(lambda *x: self.update_bg_color(self, self.md_bg_color))
 
     def update_bg_color(self, instance, value: list) -> NoReturn:
@@ -318,6 +323,13 @@ class BackgroundColorBehavior(CommonElevationBehavior):
             self._background_origin = self.background_origin
         else:
             self._background_origin = self.center
+
+    def update_line_color(self, instance, value: list) -> NoReturn:
+        if self.disabled is True:
+            self.on_disabled(self, self.disabled)
+            return
+        if self.md_bg_color_disabled:
+            self._line_color = self.md_bg_color_disabled
 
     def on_disabled(self, instance, value: bool) -> NoReturn:
         if value is False:
