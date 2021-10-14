@@ -279,6 +279,8 @@ class BackgroundColorBehavior(CommonElevationBehavior):
     and defaults to `[0, 0, 0, 0]`.
     """
 
+    line_width = BoundedNumericProperty(1.01, min=1, errorvalue=1.01)
+
     angle = NumericProperty(0)
     background_origin = ListProperty(None)
 
