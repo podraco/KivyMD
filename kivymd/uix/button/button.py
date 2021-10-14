@@ -448,7 +448,7 @@ from kivy.graphics.stencil_instructions import (
 )
 from kivy.graphics.vertex_instructions import Ellipse, RoundedRectangle
 from kivy.lang import Builder
-from kivy.metrics import dp
+from kivy.metrics import (dp, sp)
 from kivy.properties import (
     BooleanProperty,
     ColorProperty,
@@ -642,12 +642,44 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     * Circles.
     """
 
+    use_primary_as_text = BooleanProperty(False)
+    """
+    text color Controller Value.
+
+    Determines wether we use or not the primary color as text color,
+    rather than using the `ThemeManager.text_color`
+
+    Values:
+    * True: will use the ThemeManager,primary_color as text color.
+    * False: will use the ThemeManager.text_color instead.
+
+    This property can be set on KV. doing so, remember to set the
+    dash prior to the property to avoid multiple redefinitions.
+    example:
+    ```
+        widget:
+            -use_primary_as_text: True
+    ```
+    """
+    corner_type = OptionProperty(
+        "Square",
+        options=[
+            "Square",
+            "Round",
+            "Hexagonal",
+            "Octagonal",
+        ]
+    )
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.theme_cls.bind(primary_palette=self.update_bg_color)
         self.theme_cls.bind(primary_color=self.update_bg_color)
         self.theme_cls.bind(theme_style=self.update_bg_color)
+        self.bind(corner_type=self.update_corners)
+        self.bind(size=self.update_corners)
         Clock.schedule_once(self.update_text_color)
+        Clock.schedule_once(self.update_corners)
 
     def on_disabled(self, instance, disabled):
         super().on_disabled(instance, disabled)
@@ -676,14 +708,14 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         else:
             self._text_color = self.theme_cls.get_contrast_color(self._md_bg_color)
 
-    def update_bg_color(self, instance, value) -> NoReturn:
+    def update_bg_color(self, *dt) -> NoReturn:
         """Called when the application color palette changes."""
-        # The super call acts as follows:
-        #   calls the disabled method and only applies a color if md_bg_color is
-        #   set, otherwise doesn't changes the _md_bg_color, returns None.
-        super().update_bg_color(instance, value)
-        # Now we tell the object to set the button to use the theme color if
-        # the md_bg_color property is set to None
+        # NOTE: The super call acts as follows:
+        #       calls the disabled method and only applies a color if md_bg_color is
+        #       set, otherwise doesn't changes the _md_bg_color, returns None.
+        super().update_bg_color(*dt)
+        # NOTE: Now we tell the object to set the button to use the theme color if
+        #       the md_bg_color property is set to None
         if not self.md_bg_color and self.use_theme_color:
             self._md_bg_color = self.theme_cls._get_primary_color()
         # then, we set the text color.
@@ -694,6 +726,22 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
 
     def remove_label(self, interval: Union[int, float]) -> NoReturn:
         self.remove_widget(self.ids.lbl_txt)
+
+    def update_corners(self, *dt):
+        corner_type = self.corner_type
+        configuration = {
+            "Square": 0,
+            "Round": 12,
+            "Hexagonal": 1,
+            "Octagonal": 2,
+        }
+        if corner_type == "Square":
+            # self.radius = [0]*4
+            self.segments = 1
+            return
+        # self.radius = self.height//2
+        self.segments = configuration[corner_type]
+        pass
 
 
 class BasePressedButton(BaseButton):
@@ -745,7 +793,7 @@ class BasePressedButton(BaseButton):
             )
             self._pressed_fade_animation.bind(
                 on_complete=lambda *x: setattr(
-                    self,"_pressed_fade_animation", None
+                    self, "_pressed_fade_animation", None
                 )
             )
             self._pressed_fade_animation.start(self)
@@ -766,25 +814,7 @@ class BaseRectangularButton(
 
 
 class BaseFlatButton(BaseRectangularButton):
-    use_primary_as_text = BooleanProperty(False)
-    """
-    Controller Value.
 
-    Determines wether we use or not the primary color as text color,
-    rather than using the `ThemeManager.text_color`
-
-    Values:
-    * True: will use the ThemeManager,primary_color as text color.
-    * False: will use the ThemeManager.text_color instead.
-
-    This property can be set on KV. doing so, remember to set the
-    dash prior to the property to avoid multiple redefinitions.
-    example:
-    ```
-        widget:
-            -use_primary_as_text: True
-    ```
-    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.draw_shadow = self.__draw_shadow__
@@ -941,6 +971,8 @@ class BaseIconButton(BaseButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(icon_color=self.update_icon_color)
+        self.theme_cls.bind(primary_color=self.update_icon_color)
+        self.theme_cls.bind(theme_style=self.update_icon_color)
         Clock.schedule_once(self.update_icon_color)
 
     def update_icon_color(self, *dt):
@@ -951,8 +983,10 @@ class BaseIconButton(BaseButton):
             self._icon_color = self.icon_color
         elif self.text_color:
             self._icon_color = self.text_color
-        if self.use_theme_color:
+        elif self.use_primary_as_text:
             self._icon_color = self.theme_cls._get_primary_color()
+            return
+        self._icon_color = self._text_color
 
     def on_disabled(self, instance, disabled):
         super().on_disabled(instance, disabled)
@@ -966,12 +1000,22 @@ class BaseIconButton(BaseButton):
 
 
 class BaseLineButton(BaseButton):
-    line_width = NumericProperty(1)
-    """
-    Line width for button border.
+    # line_width = NumericProperty(1)
+    # """
+    # Line width for button border.
+    #
+    # :attr:`line_width` is an :class:`~kivy.properties.NumericProperty`
+    # and defaults to `1`.
+    # provided by color behavior
+    # """
 
-    :attr:`line_width` is an :class:`~kivy.properties.NumericProperty`
-    and defaults to `1`.
+    line_segments = NumericProperty(30)
+    """
+    For some reason, the Line.rounded_rectangle works differently to the
+    RoundedRectangle canvas instruction segment property
+
+    this is a mirror property, it won't share the same caonfiguration as
+    obj.segment but will make look the same.
     """
 
     def __init__(self, **kwargs):
@@ -1057,13 +1101,14 @@ class MDRectangleFlatIconButton(BaseIconButton, MDRectangleFlatButton):
 
 
 class MDRoundFlatButton(BaseLineButton, MDFlatButton):
-    line_width = NumericProperty(1)
-    """
-    Line width for button border.
-
-    :attr:`line_width` is an :class:`~kivy.properties.NumericProperty`
-    and defaults to `1`.
-    """
+    # line_width = NumericProperty(1)
+    # """
+    # Line width for button border.
+    #
+    # :attr:`line_width` is an :class:`~kivy.properties.NumericProperty`
+    # and defaults to `1`.
+    # Provided by color behavior
+    # """
 
     line_color = ColorProperty(None)
     """
@@ -1095,6 +1140,7 @@ class MDRoundFlatButton(BaseLineButton, MDFlatButton):
                 pos=self.pos,
                 radius=[*self.radius],
                 group="round_ripple_behavior",
+                segments=self.segments,
             )
             StencilUse()
             self.col_instruction = Color(
@@ -1114,6 +1160,7 @@ class MDRoundFlatButton(BaseLineButton, MDFlatButton):
                 pos=self.pos,
                 radius=[*self.radius],
                 group="round_ripple_behavior",
+                segments=self.segments,
             )
             StencilPop(group="round_ripple_behavior")
         self.bind(ripple_color=self._set_color, _ripple_rad=self._set_ellipse)
@@ -1163,26 +1210,55 @@ class MDRoundFlatIconButton(MDRoundFlatButton):
     def remove_label(self, interval: Union[int, float]) -> NoReturn:
         self.remove_widget(self.ids.lbl_txt)
 
+class BaseFillButton(BaseLineButton, BaseRectangularButton):
+    pass
 
-class MDFillRoundFlatButton(MDRoundFlatButton):
-    opposite_colors = BooleanProperty(True)
+class MDFillRoundFlatButton(BaseFillButton):
+
+    # opposite_colors = BooleanProperty(True)
 
     def __init__(self, **kwargs):
-        # Some blatant shit :(
         super().__init__(**kwargs)
-        self.md_bg_color = self.theme_cls.primary_color
-        super().__init__(**kwargs)
-        Clock.schedule_once(self.set_text_color)
 
-    def set_text_color(self, interval: Union[int, float]) -> NoReturn:
-        if self.text_color in (
-            [0.0, 0.0, 0.0, 0.87],
-            [0.0, 0.0, 0.0, 1.0],
-            [1.0, 1.0, 1.0, 1.0],
-        ):
-            self.text_color = text_colors[self.theme_cls.primary_palette][
-                self.theme_cls.primary_hue
-            ]
+    def update_text_color(self, *dt) -> NoReturn:
+        if self.theme_text_color != "Custom":
+            return
+        if self.disabled:
+            self.on_disabled(self, self.disabled)
+        elif self.text_color:
+            self._text_color = self.text_color
+        elif self.use_primary_as_text:
+            self._text_color = self.theme_cls._get_primary_color()
+        else:
+            self._text_color = self.theme_cls.get_contrast_color(self._md_bg_color)
+
+    def update_bg_color(self, instance, value):
+        if self.disabled:
+            self.on_disabled(self, self.disabled)
+            return
+        if self.md_bg_color:
+            self._md_bg_color = self.md_bg_color
+        elif self.use_theme_color:
+            self._md_bg_color = self.theme_cls._get_primary_color()
+        self.update_text_color(self, self.text_color)
+
+    def update_line_color(self, *dt):
+        if self.disabled:
+            self.on_disabled(self, self.disabled)
+            return
+        elif self.line_color:
+            self._line_color = self.line_color
+            return
+
+    # def set_text_color(self, interval: Union[int, float]) -> NoReturn:
+    #     if self.text_color in (
+    #         [0.0, 0.0, 0.0, 0.87],
+    #         [0.0, 0.0, 0.0, 1.0],
+    #         [1.0, 1.0, 1.0, 1.0],
+    #     ):
+    #         self.text_color = text_colors[self.theme_cls.primary_palette][
+    #             self.theme_cls.primary_hue
+    #         ]
 
     # def update_md_bg_color(
     #     self, instance_theme_manager, name_palette: str
@@ -1194,69 +1270,10 @@ class MDFillRoundFlatButton(MDRoundFlatButton):
     #     self.set_text_color(0)
 
 
-class MDFillRoundFlatIconButton(MDRoundFlatIconButton):
+class MDFillRoundFlatIconButton(BaseIconButton, MDFillRoundFlatButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Clock.schedule_once(self.update_text_color)
-        Clock.schedule_once(self.update_icon_color)
-
-    def set_md_bg_color(self, interval: Union[int, float]) -> NoReturn:
-        if self.md_bg_color == [0.0, 0.0, 0.0, 0.0]:
-            self.md_bg_color = self.theme_cls.primary_color
-
-    def on_md_bg_color(self, instance_button, color: list) -> NoReturn:
-        self.md_bg_color = color
-        if self.md_bg_color != self.md_bg_color_disabled:
-            self._md_bg_color = color
-
-    # def update_md_bg_color(
-    #     self, instance_theme_manager, name_palette: str
-    # ) -> NoReturn:
-    #     """Called when the application color palette changes."""
-    #
-    #     self.md_bg_color = self.theme_cls._get_primary_color()
-    #     self.update_text_color(instance_theme_manager, name_palette)
-    #     if self.icon_color in (
-    #         [0.0, 0.0, 0.0, 0.87],
-    #         [0.0, 0.0, 0.0, 1.0],
-    #         [1.0, 1.0, 1.0, 1.0],
-    #     ):
-    #         self.icon_color = text_colors[self.theme_cls.primary_palette][
-    #             self.theme_cls.primary_hue
-    #         ]
-
-    def update_text_color(self, *args) -> NoReturn:
-        if self.text_color in (
-            [0.0, 0.0, 0.0, 0.87],
-            [0.0, 0.0, 0.0, 1.0],
-            [1.0, 1.0, 1.0, 1.0],
-        ):
-            self.text_color = text_colors[self.theme_cls.primary_palette][
-                self.theme_cls.primary_hue
-            ]
-
-    def set_text_color(self, interval: Union[int, float]) -> NoReturn:
-        pass
-
-    def update_icon_color(self, interval: Union[int, float]) -> NoReturn:
-        if not self.icon_color:
-            self.icon_color = text_colors[self.theme_cls.primary_palette][
-                self.theme_cls.primary_hue
-            ]
-
-    def on_disabled(self, instance_button, value_disabled: bool) -> NoReturn:
-        if value_disabled:
-            if not self.md_bg_color_disabled:
-                self.md_bg_color_disabled = (
-                    self.theme_cls.disabled_hint_text_color
-                )
-            self.md_bg_color = self.md_bg_color_disabled
-        else:
-            if self.md_bg_color:
-                self._md_bg_color = self.md_bg_color
-
-    def set_icon_color(self, interval):
-        pass
+        Clock.schedule_once(self.remove_label)
 
 
 class MDIconButton(BaseRoundButton, BasePressedButton):
