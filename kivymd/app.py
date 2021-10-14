@@ -43,15 +43,18 @@ __all__ = ("MDApp",)
 import os
 from typing import NoReturn
 
+# kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty
 
+# kivymd
 from kivymd.theming import ThemeManager
 
 
 class FpsMonitoring:
     """Implements a monitor to display the current FPS in the toolbar."""
+    fps_monitor = ObjectProperty(None, alownone=True)
 
     def fps_monitor_start(self) -> NoReturn:
         """Adds a monitor to the main application window."""
@@ -60,9 +63,14 @@ class FpsMonitoring:
 
         from kivymd.utils.fpsmonitor import FpsMonitor
 
-        monitor = FpsMonitor()
-        monitor.start()
-        Window.add_widget(monitor)
+        self.fps_monitor = FpsMonitor()
+        self.fps_monitor.start()
+        Window.add_widget(self.fps_monitor)
+
+    def fps_monitor_stop(self, *dt) -> NoReturn:
+        from kivy.core.window import Window
+        if self.fps_monitor:
+            Window.remove_widget(self.fps_monitor)
 
 
 class MDApp(App, FpsMonitoring):
