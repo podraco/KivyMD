@@ -571,6 +571,7 @@ class MDTimePicker(BaseDialogPicker):
         self.am_pm = selected
 
     def _set_am_pm(self, selected):
+        self.am_pm = selected
         self._am_pm_selector.mode = self.am_pm
         self._am_pm_selector.selected = self.am_pm
 
