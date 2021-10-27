@@ -220,7 +220,7 @@ class BackgroundColorBehavior(CommonElevationBehavior):
     color and the "default" color.
     """
 
-    md_bg_color = ColorProperty(None, alownone=True)
+    md_bg_color = ColorProperty(None, allownone=True)
     """
     The background color of the widget (:class:`~kivy.uix.widget.Widget`)
     that will be inherited from the :attr:`BackgroundColorBehavior` class.

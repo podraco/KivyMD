@@ -54,7 +54,7 @@ from kivymd.theming import ThemeManager
 
 class FpsMonitoring:
     """Implements a monitor to display the current FPS in the toolbar."""
-    fps_monitor = ObjectProperty(None, alownone=True)
+    fps_monitor = ObjectProperty(None, allownone=True)
 
     def fps_monitor_start(self) -> NoReturn:
         """Adds a monitor to the main application window."""

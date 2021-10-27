@@ -581,6 +581,8 @@ class MDTimePicker(BaseDialogPicker):
         """
 
         hour = time_obj.hour
+        if hour == 0:
+            hour = 12
         minute = time_obj.minute
         if hour > 12:
             hour -= 12
