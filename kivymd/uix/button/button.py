@@ -629,7 +629,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
     Since this name is ambiguous, it can be used by other methods.
     """
 
-    segments: int = NumericProperty(100)
+    segments: int = NumericProperty(16)
     """
     Number of segments used by the canvas instruction.
 
@@ -731,7 +731,7 @@ class BaseButton(BackgroundColorBehavior, ThemableBehavior, ButtonBehavior, Anch
         corner_type = self.corner_type
         configuration = {
             "Square": 0,
-            "Round": 12,
+            "Round": int(self.height//2),
             "Hexagonal": 1,
             "Octagonal": 2,
         }
@@ -1239,13 +1239,13 @@ class MDFillRoundFlatButton(BaseFillButton):
             self._md_bg_color = self.theme_cls._get_primary_color()
         self.update_text_color(self, self.text_color)
 
-    def update_line_color(self, *dt):
-        if self.disabled:
-            self.on_disabled(self, self.disabled)
-            return
-        elif self.line_color:
-            self._line_color = self.line_color
-            return
+    # def update_line_color(self, *dt):
+    #     if self.disabled:
+    #         self.on_disabled(self, self.disabled)
+    #         return
+    #     elif self.line_color:
+    #         self._line_color = self.line_color
+    #         return
 
     # def set_text_color(self, interval: Union[int, float]) -> NoReturn:
     #     if self.text_color in (
