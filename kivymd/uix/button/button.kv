@@ -1,3 +1,5 @@
+#: import pformat pprint.pformat
+#: import pprint pprint.pprint
 <BaseButton>
     # canvas:
     #     Clear
@@ -31,6 +33,16 @@
         font_name: root.font_name if root.font_name else self.font_name
         canvas.before:
             Clear
+
+<MDRaisedButton>:
+    canvas.before:
+        Color:
+            rgba: self._md_bg_color
+        RoundedRectangle:
+            pos:self.pos
+            size:self.size
+            radius: self.radius
+            segments: self.segments
 
 
 <BaseFlatButton>:
@@ -81,9 +93,11 @@
         Clear
         Color:
             rgba: self._md_bg_color
-        Rectangle:
+        RoundedRectangle:
             pos:self.pos
             size: self.size
+            radius: self.radius
+            segments: self.segments
 
 
 <MDRoundFlatButton>
@@ -91,6 +105,7 @@
     corner_type:"Round"
     radius: "18sp"
     canvas.before:
+
         Color:
             rgba: root._line_color
                 # (root.theme_cls.primary_color if not root.line_color else root.line_color) \
@@ -108,14 +123,16 @@
 
 <BaseFillButton>:
     radius: self.height//2
-    segments: 12
+    # segments: [12]
     canvas.before:
-        # Color:
-        #     rgba: root._md_bg_color
-        # RoundedRectangle:
-        #     radius: [*root.radius]
-        #     pos: root.pos
-        #     size: self.size
+        Clear
+        Color:
+            rgba: self._md_bg_color
+        RoundedRectangle:
+            pos:self.pos
+            size:self.size
+            segments: self.segments
+            radius: self.radius
         Color:
             rgba: root._line_color
         Line:
@@ -123,9 +140,8 @@
             rounded_rectangle:
                 (self.x, self.y, self.width, self.height,\
                 *root.radius,\
-                self.height)
-
-                # radius: [*root.radius]
+                self.segments)
+                # radius: root.radius
                 # pos: root.pos
                 # size: self.size
 
@@ -134,12 +150,7 @@
     -use_primary_as_text: False
     line_width: 0.001
     theme_text_color: "Custom"
-
-    on_release:
-        print(self.radius)
-        self.radius=[8,19]
-
-
+    corner_type:"Round"
 
 <MDFillRoundFlatIconButton>
     -use_theme_color: True
@@ -205,12 +216,12 @@
 
 <MDRectangleFlatIconButton>
     # -use_primary_as_text: True
-    canvas.before:
-        Color:
-            rgba: root._line_color
-        Line:
-            width: root.line_width
-            rectangle: (self.x, self.y, self.width, self.height)
+    # canvas.before:
+    #     Color:
+    #         rgba: root._line_color
+    #     Line:
+    #         width: root.line_width
+    #         rectangle: (self.x, self.y, self.width, self.height)
 
     size_hint_x: None
     width: root.lbl_txt.width + lbl_ic.width * 2 + box.spacing
@@ -247,20 +258,6 @@
 
 
 <MDRoundFlatIconButton>
-    canvas.before:
-        Color:
-            rgba: root._md_bg_color
-                # (root.theme_cls.primary_color if not root.line_color else root.line_color) \
-                # if not root.disabled else \
-                # (root.md_bg_color_disabled if root.md_bg_color_disabled \
-                # else root.theme_cls.disabled_hint_text_color)
-        Line:
-            width: root.line_width
-            rounded_rectangle:
-                (self.x, self.y, self.width, self.height,\
-                *root.radius,\
-                self.height)
-
     size_hint_x: None
     width: root.lbl_txt.width + lbl_ic.width * 2 + box.spacing
 
