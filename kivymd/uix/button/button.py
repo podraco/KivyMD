@@ -812,6 +812,13 @@ class BaseRectangularButton(
         if self.width < 88:
             self.width = 88
 
+    def on_disabled(self, instance, value):
+        super().on_disabled(instance, value)
+        if value is True:
+            self._elevation = 0
+        else:
+            self._elevation = self.elevation
+
 
 class BaseFlatButton(BaseRectangularButton):
 
@@ -1058,16 +1065,6 @@ class MDRaisedButton(BaseRectangularButton, BaseElevationButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Clock.schedule_once(self.update_text_color)
-
-    def update_text_color(self, *args) -> NoReturn:
-        if self.text_color in (
-            [0.0, 0.0, 0.0, 0.87],
-            [0.0, 0.0, 0.0, 1.0],
-            [1.0, 1.0, 1.0, 1.0],
-        ):
-            self.text_color = text_colors[self.theme_cls.primary_palette][
-                self.theme_cls.primary_hue
-            ]
 
 
 class MDFlatButton(BaseFlatButton):
