@@ -399,3 +399,10 @@ class MDIcon(MDLabel):
     :attr:`source` is an :class:`~kivy.properties.StringProperty`
     and defaults to `None`.
     """
+
+    source_color = ColorProperty([1,1,1,1])
+    """
+    Color of the image source.
+    :attr:`source` is an :class:`~kivy.properties.ColorProperty`
+    and defaults to `[1,1,1,1]`.
+    """

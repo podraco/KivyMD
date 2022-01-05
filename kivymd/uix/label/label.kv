@@ -25,7 +25,7 @@
 
     canvas:
         Color:
-            rgba: (1, 1, 1, 1) if self.source else (0, 0, 0, 0)
+            rgba: self.source_color if self.source else (0, 0, 0, 0)
         Rectangle:
             source: self.source if self.source else None
             pos: self.pos
